@@ -199,6 +199,9 @@ end
 
 # (T007) Constants-aware SymbolExpr dispatch
 function compute(backend::JuliaBackend, expr::SymbolExpr)
+    if expr.name == "Nothing"
+        return expr
+    end
     if haskey(JULIA_CONSTANTS, expr.name)
         return _value_to_mathjson(JULIA_CONSTANTS[expr.name])
     end
@@ -212,6 +215,14 @@ function compute(backend::JuliaBackend, expr::FunctionExpr)
 
     if isempty(args)
         throw(ArgumentError("Empty arguments for operator '$op'"))
+    end
+
+    # --- Block passthrough (evaluate all, return last) ---
+    if op == :Block
+        for i in 1:length(args)-1
+            compute(backend, args[i])
+        end
+        return compute(backend, args[end])
     end
 
     # --- List/Matrix passthrough ---

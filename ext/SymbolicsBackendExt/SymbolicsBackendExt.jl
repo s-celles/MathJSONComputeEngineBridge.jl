@@ -31,6 +31,17 @@ function compute(::SymbolicsBackend, expr::FunctionExpr)
     op = expr.operator
     args = expr.arguments
 
+    # --- Block passthrough (evaluate all, return last) ---
+    if op == :Block
+        if isempty(args)
+            throw(ArgumentError("Block requires at least one child expression"))
+        end
+        for i in 1:length(args)-1
+            compute(SymbolicsBackend(), args[i])
+        end
+        return compute(SymbolicsBackend(), args[end])
+    end
+
     # Check for unsupported operations first
     if haskey(UNSUPPORTED_OPS, op)
         suggested = UNSUPPORTED_OPS[op]

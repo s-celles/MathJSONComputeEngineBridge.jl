@@ -19,6 +19,7 @@ using Test
     include("test_matrix.jl")
     include("test_combinatorics.jl")
     include("test_statistics.jl")
+    include("test_block.jl")
 
     # GiacBackend tests (require Giac.jl)
     _giac_available = try
@@ -37,6 +38,7 @@ using Test
         include("test_giac_number_theory.jl")
         include("test_giac_ode_series.jl")
         include("test_giac_fallback.jl")
+        include("test_giac_block.jl")
     end
 
     # SymbolicsBackend tests (require Symbolics.jl)

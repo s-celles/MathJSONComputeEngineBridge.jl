@@ -42,6 +42,8 @@ Default backend for numeric evaluation using Julia's stdlib.
 
 **Meta-operators**: InverseFunction (delegates to inverse of named function)
 
+**Structural**: Block (evaluate children, return last), Nothing (sentinel passthrough)
+
 **Passthrough**: List, Matrix (recursive evaluation)
 """
 struct JuliaBackend <: AbstractComputeBackend end

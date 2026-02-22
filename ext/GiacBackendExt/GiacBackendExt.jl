@@ -12,6 +12,64 @@ include("conversion_to_giac.jl")
 include("conversion_to_mathjson.jl")
 include("fallback.jl")
 
+# --- PlutoMathInput normalization ---
+
+"""
+Normalize PlutoMathInput Function/Limits argument patterns to direct form.
+
+Converts:
+  Integrate(Function(Block(body), var), Limits(var, Nothing, Nothing)) → Integrate(body, var)
+  Integrate(Function(Block(body), var), Limits(var, lo, hi))           → Integrate(body, var, lo, hi)
+
+Returns args unchanged if the pattern doesn't match.
+"""
+function _normalize_plutomathinput_args(args::Vector{<:AbstractMathJSONExpr})
+    length(args) == 2 || return args
+
+    func_arg = args[1]
+    limits_arg = args[2]
+
+    # Check for Function/Limits pattern
+    (func_arg isa FunctionExpr && func_arg.operator == :Function) || return args
+    (limits_arg isa FunctionExpr && limits_arg.operator == :Limits) || return args
+
+    # Validate Function has >= 2 args
+    if length(func_arg.arguments) < 2
+        throw(ArgumentError("Function requires at least 2 arguments (body, variable), got $(length(func_arg.arguments))"))
+    end
+
+    # Validate Limits has >= 3 args
+    if length(limits_arg.arguments) < 3
+        throw(ArgumentError("Limits requires at least 3 arguments (variable, lower, upper), got $(length(limits_arg.arguments))"))
+    end
+
+    # Extract body from Function(Block(body), var)
+    body = func_arg.arguments[1]
+    if body isa FunctionExpr && body.operator == :Block
+        if isempty(body.arguments)
+            throw(ArgumentError("Block requires at least one child expression"))
+        end
+        body = body.arguments[end]  # Last expression in Block
+    end
+
+    # Extract variable from Function's 2nd argument
+    var = func_arg.arguments[2]
+
+    # Extract bounds from Limits(var, lower, upper)
+    lower = limits_arg.arguments[2]
+    upper = limits_arg.arguments[3]
+
+    # Check if bounds are Nothing (indefinite)
+    lower_is_nothing = lower isa SymbolExpr && lower.name == "Nothing"
+    upper_is_nothing = upper isa SymbolExpr && upper.name == "Nothing"
+
+    if lower_is_nothing && upper_is_nothing
+        return AbstractMathJSONExpr[body, var]  # Indefinite
+    else
+        return AbstractMathJSONExpr[body, var, lower, upper]  # Definite
+    end
+end
+
 # --- compute methods for GiacBackend ---
 
 function compute(::GiacBackend, expr::NumberExpr)
@@ -20,6 +78,10 @@ function compute(::GiacBackend, expr::NumberExpr)
 end
 
 function compute(::GiacBackend, expr::SymbolExpr)
+    # Nothing sentinel: pass through unchanged
+    if expr.name == "Nothing"
+        return expr
+    end
     # Constants stay as-is (Giac evaluates e → exp(1), Pi → pi, etc.)
     if haskey(GIAC_CONSTANTS, expr.name)
         return expr
@@ -30,6 +92,24 @@ end
 
 function compute(::GiacBackend, expr::FunctionExpr)
     op = expr.operator
+    args = expr.arguments
+
+    # --- Block passthrough (evaluate all, return last) ---
+    if op == :Block
+        if isempty(args)
+            throw(ArgumentError("Block requires at least one child expression"))
+        end
+        for i in 1:length(args)-1
+            compute(GiacBackend(), args[i])
+        end
+        return compute(GiacBackend(), args[end])
+    end
+
+    # --- Normalize PlutoMathInput Function/Limits args for calculus ops ---
+    if op in (:Integrate, :Sum, :Product, :Limit, :D)
+        args = _normalize_plutomathinput_args(args)
+        expr = FunctionExpr(op, args)
+    end
 
     # IsPrime needs special handling: Giac returns 0/1, we want True/False
     if op == :IsPrime

@@ -1,6 +1,6 @@
 name = "MathJSONComputeEngineBridge"
 uuid = "c09e7786-a2fb-4839-8ffe-e6218df50e91"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Sébastien Celles <s.celles@gmail.com>"]
 
 [deps]

@@ -156,6 +156,33 @@ Matrices are represented as `FunctionExpr(:Matrix, [FunctionExpr(:List, [NumberE
 | `ExponentialE`    | `ℯ`         | Euler's number (2.71828...) |
 | `ImaginaryUnit`   | `im`        | Imaginary unit (√-1) |
 
+### Structural Operators (PlutoMathInput Compatibility)
+
+| MathJSON Operator | Behavior | Description |
+|-------------------|----------|-------------|
+| `Block`           | passthrough | Evaluates all children, returns last result |
+| `Nothing`         | sentinel    | Passes through unchanged (placeholder for absent values) |
+| `Function`        | structural  | Binds a variable to an expression body (used with calculus ops) |
+| `Limits`          | structural  | Specifies variable with optional bounds (used with calculus ops) |
+
+These operators are produced by [PlutoMathInput](https://github.com/s-celles/PlutoMathInput.jl) during MathJSON canonicalization. For example, `Integrate(Tan(x), x)` is canonicalized as:
+
+```julia
+FunctionExpr(:Integrate, [
+    FunctionExpr(:Function, [
+        FunctionExpr(:Block, [FunctionExpr(:Tan, [SymbolExpr("x")])]),
+        SymbolExpr("x")
+    ]),
+    FunctionExpr(:Limits, [
+        SymbolExpr("x"),
+        SymbolExpr("Nothing"),  # No lower bound (indefinite)
+        SymbolExpr("Nothing")   # No upper bound (indefinite)
+    ])
+])
+```
+
+GiacBackend automatically normalizes this to the direct form before evaluation.
+
 ### InverseFunction Meta-Operator
 
 The `InverseFunction` operator delegates to the inverse of a named function:
@@ -338,6 +365,8 @@ The following operations are not supported by SymbolicsBackend and will raise `U
 |---------|-------------|-----------------|-------------|
 | Numeric evaluation | Yes | Yes | Yes |
 | ImaginaryUnit | Yes | Yes | Yes |
+| Block / Nothing (structural) | Yes | Yes | Yes |
+| Function / Limits (PlutoMathInput) | No | No | Yes |
 | Combinatorics (Fibonacci, Permutations) | Yes | No | No |
 | Statistics (Mean, Median, Variance, StdDev) | Yes | No | No |
 | Symbolic variables | No | Yes | Yes |
