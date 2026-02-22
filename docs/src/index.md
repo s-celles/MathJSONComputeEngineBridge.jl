@@ -132,12 +132,29 @@ result = evaluate(expr)
 
 Matrices are represented as `FunctionExpr(:Matrix, [FunctionExpr(:List, [NumberExpr...]), ...])`.
 
+### Combinatorics
+
+| MathJSON Operator | Julia Function | Description |
+|-------------------|---------------|-------------|
+| `Fibonacci`       | `Combinatorics.fibonaccinum` | Fibonacci number F(n) for n ≥ 0 |
+| `Permutations`    | `P(n, k)`     | Permutation count n!/(n-k)!, returns 0 when k > n |
+
+### Statistics
+
+| MathJSON Operator      | Julia Function | Description |
+|------------------------|---------------|-------------|
+| `Mean`                 | `Statistics.mean` | Arithmetic mean of a List |
+| `Median`               | `Statistics.median` | Median of a List |
+| `Variance`             | `Statistics.var(; corrected=false)` | Population variance of a List |
+| `StandardDeviation`    | `Statistics.std(; corrected=false)` | Population standard deviation of a List |
+
 ### Mathematical Constants
 
 | MathJSON Symbol   | Julia Value | Description |
 |-------------------|-------------|-------------|
 | `Pi`              | `π`         | Pi (3.14159...) |
 | `ExponentialE`    | `ℯ`         | Euler's number (2.71828...) |
+| `ImaginaryUnit`   | `im`        | Imaginary unit (√-1) |
 
 ### InverseFunction Meta-Operator
 
@@ -320,6 +337,9 @@ The following operations are not supported by SymbolicsBackend and will raise `U
 | Feature | JuliaBackend | SymbolicsBackend | GiacBackend |
 |---------|-------------|-----------------|-------------|
 | Numeric evaluation | Yes | Yes | Yes |
+| ImaginaryUnit | Yes | Yes | Yes |
+| Combinatorics (Fibonacci, Permutations) | Yes | No | No |
+| Statistics (Mean, Median, Variance, StdDev) | Yes | No | No |
 | Symbolic variables | No | Yes | Yes |
 | Expand / Simplify | No | Yes | Yes |
 | Substitute | No | Yes | Yes |
@@ -332,7 +352,7 @@ The following operations are not supported by SymbolicsBackend and will raise `U
 | Symbolic matrices | No | Yes | Yes |
 | Code generation | No | Yes | No |
 | Pure Julia | Yes | Yes | No (requires libgiac) |
-| Dependencies | None | Symbolics.jl | Giac.jl |
+| Dependencies | Statistics, Combinatorics.jl | Symbolics.jl | Giac.jl |
 
 ## Backend Selection
 

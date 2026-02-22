@@ -1,11 +1,13 @@
 name = "MathJSONComputeEngineBridge"
 uuid = "c09e7786-a2fb-4839-8ffe-e6218df50e91"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Sébastien Celles <s.celles@gmail.com>"]
 
 [deps]
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MathJSON = "77215b4b-6f01-425c-beac-950ae6536d4d"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [weakdeps]
 Giac = "e4421f97-9838-4fd0-9fa5-94f11373bf78"
@@ -17,9 +19,11 @@ SymbolicsBackendExt = "Symbolics"
 
 [compat]
 Aqua = "0.8"
+Combinatorics = "1"
 Giac = "0.9"
 LinearAlgebra = "1"
 MathJSON = "0.2"
+Statistics = "1"
 Symbolics = "6"
 julia = "1.10"
 

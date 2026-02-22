@@ -3,7 +3,59 @@
 const JULIA_CONSTANTS = Dict{String,Number}(
     "Pi" => Float64(π),
     "ExponentialE" => Float64(ℯ),
+    "ImaginaryUnit" => im,
 )
+
+# --- Complex number handling for ImaginaryUnit ---
+
+"""Convert a Julia numeric value (possibly complex) to a MathJSON expression."""
+function _value_to_mathjson(val)
+    if val isa Complex && !iszero(imag(val))
+        re = real(val)
+        im_val = imag(val)
+        im_base = SymbolExpr("ImaginaryUnit")
+        im_term = if im_val == 1
+            im_base
+        elseif im_val == -1
+            FunctionExpr(:Negate, AbstractMathJSONExpr[im_base])
+        else
+            FunctionExpr(:Multiply, AbstractMathJSONExpr[_value_to_mathjson(im_val), im_base])
+        end
+        if iszero(re)
+            return im_term
+        else
+            return FunctionExpr(:Add, AbstractMathJSONExpr[_value_to_mathjson(re), im_term])
+        end
+    end
+    if val isa Complex
+        return _value_to_mathjson(real(val))
+    end
+    return NumberExpr(val)
+end
+
+"""Extract a Julia numeric value from a MathJSON expression (handles complex)."""
+_to_numeric(expr::NumberExpr) = expr.value
+
+function _to_numeric(expr::SymbolExpr)
+    if haskey(JULIA_CONSTANTS, expr.name)
+        return JULIA_CONSTANTS[expr.name]
+    end
+    throw(UnresolvedSymbolError([expr.name]))
+end
+
+function _to_numeric(expr::FunctionExpr)
+    op = expr.operator
+    args = expr.arguments
+    if op == :Negate && length(args) == 1
+        return -_to_numeric(args[1])
+    end
+    if op in (:Add, :Subtract, :Multiply, :Divide) && length(args) >= 2
+        values = [_to_numeric(arg) for arg in args]
+        f = Dict(:Add => +, :Subtract => -, :Multiply => *, :Divide => /)[op]
+        return length(values) == 2 ? f(values[1], values[2]) : reduce(f, values)
+    end
+    throw(ArgumentError("Cannot extract numeric value from FunctionExpr(:$op, ...)"))
+end
 
 # --- Variadic/binary arithmetic ops (existing, extended) ---
 
@@ -148,7 +200,7 @@ end
 # (T007) Constants-aware SymbolExpr dispatch
 function compute(backend::JuliaBackend, expr::SymbolExpr)
     if haskey(JULIA_CONSTANTS, expr.name)
-        return NumberExpr(JULIA_CONSTANTS[expr.name])
+        return _value_to_mathjson(JULIA_CONSTANTS[expr.name])
     end
     throw(UnresolvedSymbolError([expr.name]))
 end
@@ -206,7 +258,7 @@ function compute(backend::JuliaBackend, expr::FunctionExpr)
     # --- IsPrime (returns SymbolExpr, not NumberExpr) ---
     if op == :IsPrime
         evaluated = compute(backend, args[1])
-        result = _isprime(Integer(evaluated.value))
+        result = _isprime(Integer(_to_numeric(evaluated)))
         return SymbolExpr(result ? "True" : "False")
     end
 
@@ -214,47 +266,95 @@ function compute(backend::JuliaBackend, expr::FunctionExpr)
     if op == :Log
         if length(args) == 1
             evaluated = compute(backend, args[1])
-            return NumberExpr(log(evaluated.value))
+            return _value_to_mathjson(log(_to_numeric(evaluated)))
         elseif length(args) == 2
             eval_val = compute(backend, args[1])
             eval_base = compute(backend, args[2])
             # MathJSON: Log(value, base) → Julia: log(base, value)
-            return NumberExpr(log(eval_base.value, eval_val.value))
+            return _value_to_mathjson(log(_to_numeric(eval_base), _to_numeric(eval_val)))
         end
     end
 
     # --- Special functions (custom implementations) ---
     if op == :Sinc
         evaluated = compute(backend, args[1])
-        return NumberExpr(_sinc(evaluated.value))
+        return _value_to_mathjson(_sinc(_to_numeric(evaluated)))
     end
     if op == :Haversine
         evaluated = compute(backend, args[1])
-        return NumberExpr(_haversine(evaluated.value))
+        return _value_to_mathjson(_haversine(_to_numeric(evaluated)))
     end
     if op == :InverseHaversine
         evaluated = compute(backend, args[1])
-        return NumberExpr(_inverse_haversine(evaluated.value))
+        return _value_to_mathjson(_inverse_haversine(_to_numeric(evaluated)))
+    end
+
+    # --- Fibonacci ---
+    if op == :Fibonacci
+        evaluated = compute(backend, args[1])
+        n = Integer(_to_numeric(evaluated))
+        if n < 0
+            throw(ArgumentError("Fibonacci requires a non-negative integer, got $n"))
+        end
+        return NumberExpr(Int64(Combinatorics.fibonaccinum(n)))
+    end
+
+    # --- Permutations P(n, k) = n! / (n-k)! ---
+    if op == :Permutations
+        eval_n = compute(backend, args[1])
+        eval_k = compute(backend, args[2])
+        n = Integer(_to_numeric(eval_n))
+        k = Integer(_to_numeric(eval_k))
+        if k > n
+            return NumberExpr(0)
+        end
+        if k == 0
+            return NumberExpr(1)
+        end
+        result = prod(big(i) for i in (n - k + 1):n)
+        return NumberExpr(Int64(result))
+    end
+
+    # --- Statistics operations (Mean, Median, Variance, StandardDeviation) ---
+    if op in (:Mean, :Median, :Variance, :StandardDeviation)
+        list_expr = compute(backend, args[1])
+        if !(list_expr isa FunctionExpr && list_expr.operator == :List)
+            throw(ArgumentError("$op expects a List argument"))
+        end
+        if isempty(list_expr.arguments)
+            throw(ArgumentError("$op requires a non-empty list"))
+        end
+        values = Float64[_to_numeric(e) for e in list_expr.arguments]
+        result = if op == :Mean
+            Statistics.mean(values)
+        elseif op == :Median
+            Statistics.median(values)
+        elseif op == :Variance
+            Statistics.var(values; corrected=false)
+        else  # :StandardDeviation
+            Statistics.std(values; corrected=false)
+        end
+        return NumberExpr(result)
     end
 
     # --- Variadic arithmetic ops ---
     if haskey(JULIA_OPS, op)
         evaluated = [compute(backend, arg) for arg in args]
-        values = [e.value for e in evaluated]
+        values = [_to_numeric(e) for e in evaluated]
         f = JULIA_OPS[op]
         result = if length(values) == 2
             f(values[1], values[2])
         else
             reduce(f, values)
         end
-        return NumberExpr(result)
+        return _value_to_mathjson(result)
     end
 
     # --- Unary ops ---
     if haskey(JULIA_UNARY_OPS, op)
         evaluated = compute(backend, args[1])
         f = JULIA_UNARY_OPS[op]
-        return NumberExpr(f(evaluated.value))
+        return _value_to_mathjson(f(_to_numeric(evaluated)))
     end
 
     # --- Binary ops ---
@@ -262,7 +362,7 @@ function compute(backend::JuliaBackend, expr::FunctionExpr)
         eval1 = compute(backend, args[1])
         eval2 = compute(backend, args[2])
         f = JULIA_BINARY_OPS[op]
-        return NumberExpr(f(eval1.value, eval2.value))
+        return _value_to_mathjson(f(_to_numeric(eval1), _to_numeric(eval2)))
     end
 
     # --- Symbolic ops → UnsupportedOperationError ---

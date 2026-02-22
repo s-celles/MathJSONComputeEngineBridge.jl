@@ -2,6 +2,8 @@ module MathJSONComputeEngineBridge
 
 using MathJSON
 using LinearAlgebra
+using Statistics
+using Combinatorics
 
 include("types.jl")
 include("errors.jl")

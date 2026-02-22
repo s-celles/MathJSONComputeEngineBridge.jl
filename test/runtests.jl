@@ -17,6 +17,8 @@ using Test
     include("test_special.jl")
     include("test_number_theory.jl")
     include("test_matrix.jl")
+    include("test_combinatorics.jl")
+    include("test_statistics.jl")
 
     # GiacBackend tests (require Giac.jl)
     _giac_available = try

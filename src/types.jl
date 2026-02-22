@@ -34,7 +34,11 @@ Default backend for numeric evaluation using Julia's stdlib.
 
 **Matrix Operations**: Determinant, Transpose, Inverse (via LinearAlgebra)
 
-**Constants**: Pi, ExponentialE
+**Combinatorics**: Fibonacci, Permutations (via Combinatorics.jl)
+
+**Statistics**: Mean, Median, Variance, StandardDeviation (via Statistics stdlib)
+
+**Constants**: Pi, ExponentialE, ImaginaryUnit
 
 **Meta-operators**: InverseFunction (delegates to inverse of named function)
 

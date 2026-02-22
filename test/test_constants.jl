@@ -17,6 +17,30 @@ end
     @test evaluate(FunctionExpr(:Ln, [SymbolExpr("ExponentialE")])).value ≈ 1.0
 end
 
+@testset "ImaginaryUnit constant" begin
+    @testset "ImaginaryUnit evaluates to ImaginaryUnit symbol" begin
+        result = evaluate(SymbolExpr("ImaginaryUnit"))
+        @test result isa SymbolExpr
+        @test result.name == "ImaginaryUnit"
+    end
+
+    @testset "Add(1, ImaginaryUnit) evaluates correctly" begin
+        expr = FunctionExpr(:Add, [NumberExpr(1), SymbolExpr("ImaginaryUnit")])
+        result = evaluate(expr)
+        # Result is FunctionExpr(:Add, [NumberExpr(1.0), SymbolExpr("ImaginaryUnit")])
+        @test result isa FunctionExpr
+        @test result.operator == :Add
+    end
+
+    @testset "Multiply(2, ImaginaryUnit) evaluates correctly" begin
+        expr = FunctionExpr(:Multiply, [NumberExpr(2), SymbolExpr("ImaginaryUnit")])
+        result = evaluate(expr)
+        # Result is FunctionExpr(:Multiply, [NumberExpr(2.0), SymbolExpr("ImaginaryUnit")])
+        @test result isa FunctionExpr
+        @test result.operator == :Multiply
+    end
+end
+
 @testset "Unknown symbol throws UnresolvedSymbolError" begin
     @test_throws UnresolvedSymbolError evaluate(SymbolExpr("UnknownSymbol"))
 end

@@ -36,7 +36,13 @@ Other symbols become cached Symbolics variables.
 function convert_to_symbolics(expr::SymbolExpr)
     name = expr.name
     if haskey(SYMBOLICS_CONSTANTS, name)
-        return Symbolics.Num(SYMBOLICS_CONSTANTS[name])
+        val = SYMBOLICS_CONSTANTS[name]
+        # Complex values can't be wrapped in Num (ambiguous dispatch),
+        # return as plain Julia Complex for use in arithmetic
+        if val isa Complex
+            return val
+        end
+        return Symbolics.Num(val)
     end
     return get_or_create_variable(name)
 end

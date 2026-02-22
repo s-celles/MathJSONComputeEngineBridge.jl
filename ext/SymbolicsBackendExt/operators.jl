@@ -2,9 +2,10 @@
 # Maps MathJSON operators to Symbolics/Julia equivalents
 
 # Constants: MathJSON symbol name → Num-wrapped Julia constant
-const SYMBOLICS_CONSTANTS = Dict{String,Irrational}(
+const SYMBOLICS_CONSTANTS = Dict{String,Number}(
     "Pi" => π,
     "ExponentialE" => ℯ,
+    "ImaginaryUnit" => Complex(0, 1),
 )
 
 # Unary transcendental functions: MathJSON op → Julia Base function

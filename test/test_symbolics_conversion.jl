@@ -144,4 +144,25 @@ using Symbolics
         @test result isa FunctionExpr
         @test result.operator == :Sqrt || result.operator == :Power
     end
+
+    @testset "ImaginaryUnit evaluates through SymbolicsBackend" begin
+        result = evaluate(SymbolExpr("ImaginaryUnit"); backend=backend)
+        # Complex(0,1) converts to MathJSON with ImaginaryUnit symbol
+        result_str = string(result)
+        @test occursin("ImaginaryUnit", result_str)
+    end
+
+    @testset "Add(1, ImaginaryUnit) round-trips via SymbolicsBackend" begin
+        expr = FunctionExpr(:Add, [NumberExpr(1), SymbolExpr("ImaginaryUnit")])
+        result = evaluate(expr; backend=backend)
+        result_str = string(result)
+        @test occursin("ImaginaryUnit", result_str)
+    end
+
+    @testset "Complex output contains ImaginaryUnit" begin
+        expr = FunctionExpr(:Multiply, [NumberExpr(2), SymbolExpr("ImaginaryUnit")])
+        result = evaluate(expr; backend=backend)
+        result_str = string(result)
+        @test occursin("ImaginaryUnit", result_str)
+    end
 end

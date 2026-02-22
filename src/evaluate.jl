@@ -34,6 +34,13 @@ function compute(backend::AbstractComputeBackend, expr::AbstractMathJSONExpr)
     error("compute not implemented for $(nameof(typeof(backend)))")
 end
 
+# SymbolicsBackend fallback — fires when SymbolicsBackendExt is NOT loaded.
+# When Symbolics.jl is loaded, the extension's more-specific methods
+# (e.g. compute(::SymbolicsBackend, ::NumberExpr)) take priority over this one.
+function compute(::SymbolicsBackend, ::AbstractMathJSONExpr)
+    error("SymbolicsBackend requires Symbolics.jl. Run `using Symbolics` to activate it.")
+end
+
 """
     evaluate(expr::AbstractMathJSONExpr; backend=default_backend()) -> AbstractMathJSONExpr
 

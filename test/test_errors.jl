@@ -84,6 +84,59 @@ end
     end
 end
 
+@testset "SymbolicsBackend without Symbolics loaded" begin
+    # These tests run in the main test process BEFORE Symbolics is loaded,
+    # so they test the fallback compute methods in evaluate.jl.
+    # Note: runtests.jl loads Symbolics later in a conditional block,
+    # so we need a separate process to test this properly.
+    code = """
+    using MathJSON
+    using MathJSONComputeEngineBridge
+    using Test
+
+    @testset "SymbolicsBackend error fallbacks" begin
+        backend = SymbolicsBackend()
+
+        @testset "NumberExpr raises error mentioning Symbolics" begin
+            err = try
+                compute(backend, NumberExpr(1))
+                nothing
+            catch e
+                e
+            end
+            @test err isa ErrorException
+            @test occursin("Symbolics", err.msg)
+        end
+
+        @testset "SymbolExpr raises error mentioning Symbolics" begin
+            err = try
+                compute(backend, SymbolExpr("x"))
+                nothing
+            catch e
+                e
+            end
+            @test err isa ErrorException
+            @test occursin("Symbolics", err.msg)
+        end
+
+        @testset "FunctionExpr raises error mentioning Symbolics" begin
+            err = try
+                compute(backend, FunctionExpr(:Add, [NumberExpr(1), NumberExpr(2)]))
+                nothing
+            catch e
+                e
+            end
+            @test err isa ErrorException
+            @test occursin("Symbolics", err.msg)
+        end
+    end
+    """
+    # Run in a separate process without Symbolics
+    cmd = `$(Base.julia_cmd()) --project -e $code`
+    result = run(cmd; wait=true)
+    @test result.exitcode == 0
+end
+
 @testset "Edge cases" begin
     @testset "empty arguments raises ArgumentError" begin
         expr = FunctionExpr(:Add, AbstractMathJSONExpr[])
