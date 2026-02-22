@@ -41,3 +41,31 @@ Default backend for numeric evaluation using Julia's stdlib.
 **Passthrough**: List, Matrix (recursive evaluation)
 """
 struct JuliaBackend <: AbstractComputeBackend end
+
+"""
+    GiacBackend <: AbstractComputeBackend
+
+Symbolic computation backend using Giac.jl.
+
+Requires `using Giac` to activate. When Giac.jl is loaded, `GiacBackend`
+becomes the default backend automatically.
+
+## Supported Operations
+
+**All JuliaBackend operations** plus:
+
+**Algebra**: Factor, Expand, Simplify, Solve, PartialFractions, GCD, LCM
+
+**Calculus**: D (differentiation), Integrate (definite/indefinite), Limit, Sum, Product
+
+**Transforms**: Laplace, InverseLaplace, ZTransform, InverseZTransform
+
+**Number Theory**: IsPrime, Factorial, Mod, IntegerFactorization, ModPow
+
+**Series Expansion**: Series (Taylor/Laurent with point), Taylor (without point)
+
+**Matrix**: Determinant, Transpose, Inverse (symbolic matrices)
+
+**Fallback**: Any of ~2200 Giac commands via automatic lowercase dispatch
+"""
+struct GiacBackend <: AbstractComputeBackend end

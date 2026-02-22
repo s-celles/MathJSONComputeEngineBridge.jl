@@ -151,6 +151,95 @@ evaluate(expr)  # Same as evaluate(FunctionExpr(:Arcsin, [NumberExpr(0.5)]))
 
 Supported inverse mappings: Sin, Cos, Tan, Cot, Sec, Csc, Sinh, Cosh, Tanh, Coth, Sech, Csch, Exp.
 
+## GiacBackend (Symbolic Computation)
+
+When Giac.jl is loaded, `GiacBackend` becomes available for symbolic computation. It automatically becomes the default backend.
+
+### Installation
+
+```julia
+using Pkg
+Pkg.add(url="https://github.com/s-celles/Giac.jl")
+```
+
+### Activation
+
+```julia
+using MathJSON
+using MathJSONComputeEngineBridge
+using Giac  # Activates GiacBackend automatically
+
+# GiacBackend is now the default
+result = evaluate(FunctionExpr(:Factor, [
+    FunctionExpr(:Subtract, [
+        FunctionExpr(:Power, [SymbolExpr("x"), NumberExpr(2)]),
+        NumberExpr(1)
+    ])
+]))
+# Returns factored form: (x-1)(x+1)
+```
+
+### Symbolic Algebra
+
+| MathJSON Operator    | Giac Command   | Description |
+|----------------------|---------------|-------------|
+| `Factor`             | `factor`      | Factor polynomials |
+| `Expand`             | `expand`      | Expand expressions |
+| `Simplify`           | `simplify`    | Simplify expressions |
+| `Solve`              | `solve`       | Solve equations |
+| `PartialFractions`   | `partfrac`    | Partial fraction decomposition |
+| `GCD`                | `gcd`         | GCD of polynomials |
+| `LCM`                | `lcm`         | LCM of polynomials |
+
+### Calculus
+
+| MathJSON Operator | Giac Command   | Description |
+|-------------------|---------------|-------------|
+| `D`               | `diff`        | Differentiation |
+| `Integrate`       | `integrate`   | Integration (2 args = indefinite, 4 args = definite) |
+| `Limit`           | `limit`       | Limits |
+| `Sum`             | `sum`         | Symbolic summation |
+| `Product`          | `product`     | Symbolic product |
+
+### Transforms
+
+| MathJSON Operator    | Giac Command   | Description |
+|----------------------|---------------|-------------|
+| `Laplace`            | `laplace`     | Laplace transform |
+| `InverseLaplace`     | `ilaplace`    | Inverse Laplace transform |
+| `ZTransform`         | `ztrans`      | Z-transform |
+| `InverseZTransform`  | `invztrans`   | Inverse Z-transform |
+
+### Number Theory (GiacBackend)
+
+| MathJSON Operator         | Giac Command   | Description |
+|---------------------------|---------------|-------------|
+| `IsPrime`                 | `isprime`     | Primality test |
+| `Factorial`               | `factorial`   | Factorial |
+| `IntegerFactorization`    | `ifactor`     | Integer factorization |
+| `ModPow`                  | `powmod`      | Modular exponentiation |
+
+### Series Expansion
+
+| MathJSON Operator | Giac Command   | Description |
+|-------------------|---------------|-------------|
+| `Series`          | `series`      | Series expansion (4 args: expr, var, point, order) |
+| `Taylor`          | `taylor`      | Taylor expansion (3 args: expr, var, order) |
+
+### Symbolic Matrix Operations
+
+GiacBackend supports `Determinant`, `Transpose`, and `Inverse` on symbolic matrices (matrices containing variables).
+
+### Fallback Mechanism
+
+Any MathJSON operator not explicitly mapped is automatically forwarded to Giac by lowercasing the operator name and calling `invoke_cmd`. This provides access to all ~2200 Giac commands.
+
+```julia
+# Example: polynomial quotient (not explicitly mapped)
+expr = FunctionExpr(:Quo, [poly1, poly2, SymbolExpr("x")])
+evaluate(expr; backend=GiacBackend())
+```
+
 ## Backend Selection
 
 ```julia
@@ -159,9 +248,11 @@ result = evaluate(expr)
 
 # Explicitly specify a backend
 result = evaluate(expr; backend=JuliaBackend())
+result = evaluate(expr; backend=GiacBackend())
 
 # Change the default backend
 set_default_backend!(JuliaBackend())
+set_default_backend!(GiacBackend())
 ```
 
 ## API Reference

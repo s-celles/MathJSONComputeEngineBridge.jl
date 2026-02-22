@@ -17,4 +17,23 @@ using Test
     include("test_special.jl")
     include("test_number_theory.jl")
     include("test_matrix.jl")
+
+    # GiacBackend tests (require Giac.jl)
+    _giac_available = try
+        using Giac
+        true
+    catch
+        false
+    end
+    if _giac_available
+        include("test_giac_activation.jl")
+        include("test_giac_algebra.jl")
+        include("test_giac_calculus.jl")
+        include("test_giac_conversion.jl")
+        include("test_giac_transforms.jl")
+        include("test_giac_matrix.jl")
+        include("test_giac_number_theory.jl")
+        include("test_giac_ode_series.jl")
+        include("test_giac_fallback.jl")
+    end
 end
