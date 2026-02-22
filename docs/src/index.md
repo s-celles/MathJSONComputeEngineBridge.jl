@@ -240,6 +240,100 @@ expr = FunctionExpr(:Quo, [poly1, poly2, SymbolExpr("x")])
 evaluate(expr; backend=GiacBackend())
 ```
 
+## SymbolicsBackend (Pure Julia Symbolic Computation)
+
+When Symbolics.jl is loaded, `SymbolicsBackend` becomes available for symbolic computation. It provides a pure Julia alternative to GiacBackend for common symbolic operations.
+
+### Activation
+
+```julia
+using MathJSON
+using MathJSONComputeEngineBridge
+using Symbolics  # Activates SymbolicsBackend automatically
+
+# SymbolicsBackend is now the default
+result = evaluate(FunctionExpr(:Expand, [
+    FunctionExpr(:Power, [
+        FunctionExpr(:Add, [SymbolExpr("x"), NumberExpr(1)]),
+        NumberExpr(2)
+    ])
+]))
+# Returns x^2 + 2x + 1
+```
+
+### Symbolic Algebra
+
+| MathJSON Operator | Symbolics.jl Function | Description |
+|-------------------|-----------------------|-------------|
+| `Expand`          | `expand`              | Expand expressions |
+| `Simplify`        | `simplify`            | Simplify expressions |
+| `Substitute`      | `substitute`          | Variable substitution |
+
+### Calculus (SymbolicsBackend)
+
+| MathJSON Operator | Symbolics.jl Function | Description |
+|-------------------|-----------------------|-------------|
+| `D`               | `derivative`          | Differentiation |
+
+### Equation Solving (SymbolicsBackend)
+
+| MathJSON Operator | Symbolics.jl Function | Description |
+|-------------------|-----------------------|-------------|
+| `Solve`           | `symbolic_solve` / `solve_for` | Solve equations (polynomial and linear) |
+
+### Symbolic Matrix Operations (SymbolicsBackend)
+
+| MathJSON Operator | Julia Function | Description |
+|-------------------|---------------|-------------|
+| `Determinant`     | `det`         | Matrix determinant (symbolic) |
+| `Transpose`       | `transpose`   | Matrix transpose (symbolic) |
+| `Inverse`         | `inv`         | Matrix inverse (symbolic) |
+
+### Code Generation
+
+| MathJSON Operator | Symbolics.jl Function | Description |
+|-------------------|-----------------------|-------------|
+| `Build`           | `build_function`      | Compile symbolic expression to callable function |
+
+```julia
+# Generate a compiled function from a symbolic expression
+expr = FunctionExpr(:Build, [
+    FunctionExpr(:Add, [
+        FunctionExpr(:Power, [SymbolExpr("x"), NumberExpr(2)]),
+        FunctionExpr(:Multiply, [NumberExpr(2), SymbolExpr("x")]),
+        NumberExpr(1)
+    ]),
+    SymbolExpr("x")
+])
+result = evaluate(expr; backend=SymbolicsBackend())
+# Returns FunctionExpr(:CompiledFunction, [StringExpr("1 + 2x + x^2")])
+```
+
+### Unsupported Operations (use GiacBackend)
+
+The following operations are not supported by SymbolicsBackend and will raise `UnsupportedOperationError` suggesting `GiacBackend` as an alternative:
+
+`Integrate`, `Factor`, `PartialFractions`, `Laplace`, `InverseLaplace`, `ZTransform`, `InverseZTransform`, `Series`, `Taylor`, `Desolve`, `Limit`, `Sum`, `Product`, `IntegerFactorization`, `ModPow`
+
+### Backend Comparison
+
+| Feature | JuliaBackend | SymbolicsBackend | GiacBackend |
+|---------|-------------|-----------------|-------------|
+| Numeric evaluation | Yes | Yes | Yes |
+| Symbolic variables | No | Yes | Yes |
+| Expand / Simplify | No | Yes | Yes |
+| Substitute | No | Yes | Yes |
+| Differentiation | No | Yes | Yes |
+| Integration | No | No | Yes |
+| Equation solving | No | Yes (linear/poly) | Yes (general) |
+| Factorization | No | No | Yes |
+| Laplace/Z-transforms | No | No | Yes |
+| Series expansion | No | No | Yes |
+| Symbolic matrices | No | Yes | Yes |
+| Code generation | No | Yes | No |
+| Pure Julia | Yes | Yes | No (requires libgiac) |
+| Dependencies | None | Symbolics.jl | Giac.jl |
+
 ## Backend Selection
 
 ```julia
@@ -248,10 +342,12 @@ result = evaluate(expr)
 
 # Explicitly specify a backend
 result = evaluate(expr; backend=JuliaBackend())
+result = evaluate(expr; backend=SymbolicsBackend())
 result = evaluate(expr; backend=GiacBackend())
 
 # Change the default backend
 set_default_backend!(JuliaBackend())
+set_default_backend!(SymbolicsBackend())
 set_default_backend!(GiacBackend())
 ```
 

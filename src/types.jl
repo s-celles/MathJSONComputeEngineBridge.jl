@@ -69,3 +69,33 @@ becomes the default backend automatically.
 **Fallback**: Any of ~2200 Giac commands via automatic lowercase dispatch
 """
 struct GiacBackend <: AbstractComputeBackend end
+
+"""
+    SymbolicsBackend <: AbstractComputeBackend
+
+Pure Julia symbolic computation backend using Symbolics.jl.
+
+Requires `using Symbolics` to activate. When Symbolics.jl is loaded,
+`SymbolicsBackend` becomes the default backend automatically.
+
+## Supported Operations
+
+**All JuliaBackend arithmetic and transcendental operations** plus:
+
+**Algebra**: Expand, Simplify, Substitute
+
+**Calculus**: D (differentiation)
+
+**Equation Solving**: Solve (polynomial and linear)
+
+**Matrix**: Determinant, Transpose, Inverse (symbolic matrices)
+
+**Code Generation**: Build (compile symbolic expression to callable function)
+
+## Not Supported (use GiacBackend)
+
+Integrate, Factor, PartialFractions, Laplace, InverseLaplace,
+ZTransform, InverseZTransform, Series, Taylor, Desolve,
+Limit, Sum, Product, IntegerFactorization, ModPow
+"""
+struct SymbolicsBackend <: AbstractComputeBackend end

@@ -36,4 +36,21 @@ using Test
         include("test_giac_ode_series.jl")
         include("test_giac_fallback.jl")
     end
+
+    # SymbolicsBackend tests (require Symbolics.jl)
+    _symbolics_available = try
+        using Symbolics
+        true
+    catch
+        false
+    end
+    if _symbolics_available
+        include("test_symbolics_activation.jl")
+        include("test_symbolics_algebra.jl")
+        include("test_symbolics_calculus.jl")
+        include("test_symbolics_conversion.jl")
+        include("test_symbolics_matrix.jl")
+        include("test_symbolics_solve.jl")
+        include("test_symbolics_codegen.jl")
+    end
 end

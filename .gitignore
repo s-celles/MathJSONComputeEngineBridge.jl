@@ -18,6 +18,8 @@
 !ext/*.jl
 !ext/GiacBackendExt/
 !ext/GiacBackendExt/*.jl
+!ext/SymbolicsBackendExt/
+!ext/SymbolicsBackendExt/*.jl
 
 !test/
 !test/*.jl
