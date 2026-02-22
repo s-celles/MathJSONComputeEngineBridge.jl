@@ -1,6 +1,7 @@
 module MathJSONComputeEngineBridge
 
 using MathJSON
+using LinearAlgebra
 
 include("types.jl")
 include("errors.jl")
