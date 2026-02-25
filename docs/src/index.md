@@ -383,6 +383,41 @@ The following operations are not supported by SymbolicsBackend and will raise `U
 | Pure Julia | Yes | Yes | No (requires libgiac) |
 | Dependencies | Statistics, Combinatorics.jl | Symbolics.jl | Giac.jl |
 
+## Convenience Methods
+
+String-accepting overloads let you skip the explicit `parse` step:
+
+```julia
+using MathJSON
+using MathJSONComputeEngineBridge
+
+# Evaluate directly from a MathJSON string
+result = evaluate("""["Add", 1, ["Multiply", 2, 3]]""")
+# Returns NumberExpr(7)
+```
+
+### `evaluate(s::String; backend=default_backend())`
+
+Parses the MathJSON string and evaluates it in one call.
+
+### `to_giac(expr)` / `to_giac(s::String)`
+
+Convert a MathJSON expression (or string) to a Giac expression. Requires `using Giac`.
+
+```julia
+using Giac
+g = to_giac("""["Add", "x", 1]""")  # Returns a GiacExpr
+```
+
+### `to_symbolics(expr)` (from MathJSON.jl)
+
+`to_symbolics` is provided by MathJSON.jl directly. Load Symbolics.jl to activate it:
+
+```julia
+using Symbolics
+sym = to_symbolics(FunctionExpr(:Add, [SymbolExpr("x"), NumberExpr(1)]))
+```
+
 ## Backend Selection
 
 ```julia

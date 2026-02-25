@@ -60,3 +60,31 @@ The evaluation result as an `AbstractMathJSONExpr`.
 function evaluate(expr::AbstractMathJSONExpr; backend::AbstractComputeBackend=default_backend())
     return compute(backend, expr)
 end
+
+"""
+    evaluate(s::String; backend=default_backend()) -> AbstractMathJSONExpr
+
+Convenience method: parse a MathJSON string and evaluate it.
+
+# Examples
+```julia
+evaluate("[\"Add\", 1, 2]")  # Returns NumberExpr(3)
+```
+"""
+function evaluate(s::String; backend::AbstractComputeBackend=default_backend())
+    return evaluate(parse(MathJSONFormat, s); backend=backend)
+end
+
+"""
+    to_giac(expr::AbstractMathJSONExpr)
+    to_giac(s::String)
+
+Convert a MathJSON expression to a Giac expression.
+Requires `Giac.jl` to be loaded (`using Giac`).
+"""
+function to_giac(expr::AbstractMathJSONExpr)
+    error("to_giac requires Giac.jl. Run `using Giac` to activate it.")
+end
+function to_giac(s::String)
+    return to_giac(parse(MathJSONFormat, s))
+end

@@ -11,7 +11,7 @@ include("evaluate.jl")
 include("backends/julia_backend.jl")
 
 export AbstractComputeBackend, JuliaBackend, GiacBackend, SymbolicsBackend
-export evaluate, default_backend, set_default_backend!, compute
+export evaluate, default_backend, set_default_backend!, compute, to_giac
 export UnsupportedOperationError, UnresolvedSymbolError
 
 end

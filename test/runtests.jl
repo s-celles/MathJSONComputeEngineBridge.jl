@@ -20,6 +20,7 @@ using Test
     include("test_combinatorics.jl")
     include("test_statistics.jl")
     include("test_block.jl")
+    include("test_convenience.jl")
 
     # GiacBackend tests (require Giac.jl)
     _giac_available = try

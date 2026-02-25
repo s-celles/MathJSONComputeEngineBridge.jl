@@ -12,6 +12,12 @@ include("conversion_to_giac.jl")
 include("conversion_to_mathjson.jl")
 include("fallback.jl")
 
+# --- Public to_giac wrapper (concrete types to avoid method overwrite) ---
+MathJSONComputeEngineBridge.to_giac(expr::NumberExpr) = convert_to_giac(expr)
+MathJSONComputeEngineBridge.to_giac(expr::SymbolExpr) = convert_to_giac(expr)
+MathJSONComputeEngineBridge.to_giac(expr::StringExpr) = convert_to_giac(expr)
+MathJSONComputeEngineBridge.to_giac(expr::FunctionExpr) = convert_to_giac(expr)
+
 # --- PlutoMathInput normalization ---
 
 """
