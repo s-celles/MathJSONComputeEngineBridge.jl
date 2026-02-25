@@ -12,3 +12,7 @@ makedocs(
         "Home" => "index.md",
     ],
 )
+
+deploydocs(
+    repo = "github.com/s-celles/MathJSONComputeEngineBridge.jl.git",
+)
