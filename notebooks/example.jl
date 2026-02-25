@@ -79,17 +79,38 @@ md"""
 The widget can be pre-filled with a MathJSON expression
 """
 
+# ╔═╡ 2f9e4094-02c6-48f1-9a3c-4ddeecfbe03a
+begin
+	@giac_var x t s
+	to_mathjson(sin(x))
+end
+
+# ╔═╡ b30fcde2-8b2e-4b08-8351-d1af33e387be
+
+
+# ╔═╡ 6e09fd4a-fc17-455f-9b4e-2ac07cda7735
+display_cmd(:integrate, x)
+
+# ╔═╡ 01bcc632-9bc3-4db0-a5a9-940ff4a08ef2
+display_cmd(:laplace, t, s)
+
 # ╔═╡ c582cc9c-994c-4b97-a9b7-2db3b71d30a3
-@bind formula_mathjson_default2 MathInput(default="[\"Integrate\", [\"Tan\", \"x\"], \"x\"]", format=:mathjson, canonicalize=false)
+@bind formula_mathjson_default2 MathInput(default="[\"Integrate\", [\"sin\", \"x\"], \"x\"]", format=:mathjson, canonicalize=false)
 
 # ╔═╡ c80f902d-c43f-4fcc-ac1b-d389606a2ff4
 formula_mathjson_default2
+
+# ╔═╡ 7a53c460-af0d-40ee-a0dd-eceaa30f675e
+MathDisplay(default=formula_mathjson_default2)
 
 # ╔═╡ b1904dbe-17c9-4d03-b9a6-c2b48d833970
 parse(MathJSONFormat, formula_mathjson_default2)
 
 # ╔═╡ c036c3a1-094e-4672-a4d0-0210565ad194
-simplify(to_giac(evaluate(parse(MathJSONFormat, formula_mathjson_default2))))
+begin
+	result = evaluate(parse(MathJSONFormat, formula_mathjson_default2))
+	simplify(to_giac(result))
+end
 
 # ╔═╡ Cell order:
 # ╠═8a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
@@ -104,7 +125,12 @@ simplify(to_giac(evaluate(parse(MathJSONFormat, formula_mathjson_default2))))
 # ╠═580a1018-0bee-4dc9-a4ee-be5bc9db8290
 # ╠═e5278697-e78a-4ec6-8c2b-0a5f020f9475
 # ╟─ba29fe53-c93f-46c2-aa7a-4776ab4941aa
+# ╠═2f9e4094-02c6-48f1-9a3c-4ddeecfbe03a
+# ╠═b30fcde2-8b2e-4b08-8351-d1af33e387be
+# ╠═6e09fd4a-fc17-455f-9b4e-2ac07cda7735
+# ╠═01bcc632-9bc3-4db0-a5a9-940ff4a08ef2
 # ╠═c582cc9c-994c-4b97-a9b7-2db3b71d30a3
 # ╠═c80f902d-c43f-4fcc-ac1b-d389606a2ff4
+# ╠═7a53c460-af0d-40ee-a0dd-eceaa30f675e
 # ╠═b1904dbe-17c9-4d03-b9a6-c2b48d833970
 # ╠═c036c3a1-094e-4672-a4d0-0210565ad194
