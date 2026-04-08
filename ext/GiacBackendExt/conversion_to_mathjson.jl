@@ -144,5 +144,18 @@ function _convert_symbolic_to_mathjson(g::Giac.GiacExpr)
         mj_args = [convert_to_mathjson(arg)]
     end
 
+    # Handle unary minus -> Negate (Giac uses "-" for both subtraction and negation)
+    if funcname == "-" && length(mj_args) == 1
+        return FunctionExpr(:Negate, mj_args)
+    end
+
+    # Handle scalar inv -> Power(x, -1) (Inverse is reserved for matrices in CortexJS)
+    if funcname == "inv" && length(mj_args) == 1
+        a = mj_args[1]
+        if !(a isa FunctionExpr && a.operator == :List)
+            return FunctionExpr(:Power, AbstractMathJSONExpr[a, NumberExpr(-1)])
+        end
+    end
+
     return FunctionExpr(mathjson_op, mj_args)
 end
