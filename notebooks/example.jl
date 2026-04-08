@@ -154,6 +154,12 @@ to_giac(evaluate(parse(MathJSONFormat, formula_mathjson_default3)))
 # ╔═╡ eb39386a-a462-4f6f-988e-6a9e4b5ff027
 simplify(derive(to_giac(evaluate(parse(MathJSONFormat, formula_mathjson_default3))),x))
 
+# ╔═╡ 922d66a7-623a-4a8f-9c7f-0c4c67be49c2
+@bind formula_mathjson_default4 MathInput(format=:mathjson, canonicalize=false)
+
+# ╔═╡ 07a3fec8-e59f-4a5f-af30-9fbaa146a034
+expand(to_giac(parse(MathJSONFormat, formula_mathjson_default4)))
+
 # ╔═╡ Cell order:
 # ╠═8a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
 # ╠═46f4aefa-8238-428f-bc01-90855e43a10c
@@ -189,3 +195,5 @@ simplify(derive(to_giac(evaluate(parse(MathJSONFormat, formula_mathjson_default3
 # ╠═b985baf8-b14c-4b58-9cf5-bca2a22b02c9
 # ╠═c39c6001-3a39-4372-9a6a-82015b22bbcb
 # ╠═eb39386a-a462-4f6f-988e-6a9e4b5ff027
+# ╠═922d66a7-623a-4a8f-9c7f-0c4c67be49c2
+# ╠═07a3fec8-e59f-4a5f-af30-9fbaa146a034
