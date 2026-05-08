@@ -1,6 +1,6 @@
 name = "MathJSONComputeEngineBridge"
 uuid = "c09e7786-a2fb-4839-8ffe-e6218df50e91"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Sébastien Celles <s.celles@gmail.com>"]
 
 [deps]
@@ -21,7 +21,7 @@ SymbolicsBackendExt = "Symbolics"
 [compat]
 Aqua = "0.8"
 Combinatorics = "1"
-Giac = "0.11"
+Giac = "0.14"
 LinearAlgebra = "1"
 MathJSON = "0.3"
 PlutoMathInput = "0.4"
