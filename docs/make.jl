@@ -1,4 +1,5 @@
 using Documenter
+using DocumenterMermaid
 using MathJSONComputeEngineBridge
 
 makedocs(
@@ -10,6 +11,7 @@ makedocs(
     ),
     pages = [
         "Home" => "index.md",
+        "Formula flows" => "formula-flows.md",
     ],
 )
 
