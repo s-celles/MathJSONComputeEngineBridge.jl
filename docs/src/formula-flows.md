@@ -8,7 +8,7 @@ and the functions that convert between them.
 
 | Representation | Julia type | Package | Role |
 |---|---|---|---|
-| LaTeX | `String` | MathLive (browser) | Human-friendly input/display in the `MathInput` widget |
+| LaTeX | `String` | [PlutoMathInput.jl](https://github.com/s-celles/PlutoMathInput.jl) (MathLive editor in the browser) | Human-friendly input/display in the `MathInput` / `MathDisplay` widgets |
 | MathJSON string | `String` | [MathJSON.jl](https://github.com/s-celles/MathJSON.jl) | Serialized JSON text, e.g. `["Add",["Power","x",2],1]` — the wire format returned by `@bind` |
 | MathJSON expression tree | `FunctionExpr`, `SymbolExpr`, `NumberExpr`, `StringExpr` | MathJSON.jl | Structured Julia objects, the lingua franca of the bridge |
 | Giac expression | `GiacExpr`, `GiacMatrix` | [Giac.jl](https://github.com/s-celles/Giac.jl) | Handle into the Giac/Xcas CAS where actual computation happens |
@@ -18,7 +18,7 @@ and the functions that convert between them.
 
 ```mermaid
 flowchart LR
-    subgraph Browser["Browser (Pluto widget)"]
+    subgraph Browser["Browser (PlutoMathInput.jl widget)"]
         LATEX["LaTeX\n(MathLive editor)"]
         MJSTR["MathJSON string\n(JSON text)"]
         LATEX <-- "MathInput widget" --> MJSTR
@@ -41,22 +41,35 @@ flowchart LR
     TREE -- "to_giac(expr)" --> GIAC
     GIAC -- "to_mathjson(g)" --> TREE
 
-    TREE -- "to_symbolics(expr)" --> SYM
-    SYM -- "to_mathjson(n)" --> TREE
+    GIAC -- "to_symbolics(g)" --> SYM
+    SYM -- "to_giac(n)" --> GIAC
+
+    TREE -. "convert_to_symbolics (internal)" .-> SYM
+    SYM -. "convert_to_mathjson (internal)" .-> TREE
 
     JULIA -- "operator overloading" --> GIAC
 
     GIAC -- "simplify, expand, factor,\nderive, integrate,\nlaplace, ilaplace, partfrac,\ndet, limit, …" --> GIAC
 ```
 
-Three ideas to keep in mind:
+Four ideas to keep in mind:
 
-1. **The MathJSON expression tree is the hub.** Every other representation
-   converts to or from it; no direct LaTeX ↔ Giac path exists.
-2. **Strings are for transport, trees are for programs.** The `@bind` value of
+1. **The MathJSON expression tree is the hub between the browser and the CAS
+   layer.** No direct LaTeX ↔ CAS path exists: everything coming from a widget
+   goes through a MathJSON string and then a tree.
+2. **The two CAS backends also convert directly into each other.** Giac.jl's
+   `GiacSymbolicsExt` extension provides `to_symbolics(g::GiacExpr)::Num` and
+   `to_giac(n::Num)::GiacExpr` without passing through MathJSON (see
+   [GiacSymbolicsExt.jl](https://github.com/s-celles/Giac.jl/blob/main/ext/GiacSymbolicsExt.jl)).
+   Note that `to_giac` is therefore a multi-method function: the MathJSON-tree
+   method comes from `GiacMathJSONExt`, the `Num` method from
+   `GiacSymbolicsExt`. The dashed MathJSON ↔ Symbolics arrows are internal
+   helpers (`convert_to_symbolics` / `convert_to_mathjson`) used by the
+   bridge's `SymbolicsBackendExt` inside `evaluate` — they are not public API.
+3. **Strings are for transport, trees are for programs.** The `@bind` value of
    a `MathInput` is always a *string*; call `parse(MathJSONFormat, str)` before
    doing anything structural with it.
-3. **Computation only happens in a CAS.** MathJSON.jl represents formulas but
+4. **Computation only happens in a CAS.** MathJSON.jl represents formulas but
    does not simplify or differentiate them — that is Giac's (or Symbolics')
    job, reached through `to_giac` / `evaluate`.
 
@@ -115,6 +128,8 @@ sequenceDiagram
 | MathJSON tree | MathJSON string | `generate(MathJSONFormat, expr)` |
 | MathJSON tree | `GiacExpr` | `to_giac(expr)` |
 | `GiacExpr` / `GiacMatrix` | MathJSON tree | `to_mathjson(g)` |
+| `GiacExpr` | `Num` (Symbolics) | `to_symbolics(g)` |
+| `Num` (Symbolics) | `GiacExpr` | `to_giac(n)` |
 | Julia function + `@giac_var` | `GiacExpr` | just call it: `f(x)` |
 | MathJSON tree | MathJSON tree (computed) | `evaluate(expr)` |
 | MathJSON string | widget default | `MathInput(default=str, format=:mathjson)` |
