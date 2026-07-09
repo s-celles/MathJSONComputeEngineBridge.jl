@@ -93,6 +93,18 @@ begin
 	PlutoMathInput.MathInput(math_json_expr::FunctionExpr, args...; kwargs...) = MathInput(format=:mathjson, default=generate(MathJSONFormat, math_json_expr), args...; kwargs...)
 end
 
+# ╔═╡ 5e85f6ad-0e09-46da-9294-db5d326f8525
+@bind formula MathInput(f1(x))
+
+# ╔═╡ 981944ea-92a2-479f-b631-4d894492d235
+typeof(formula)
+
+# ╔═╡ 19234100-d9a4-4841-b328-60e275c50e6d
+formula
+
+# ╔═╡ c4cd02b5-9488-423d-92fc-b6ded33cb7eb
+parse(MathJSONFormat, formula)
+
 # ╔═╡ 184649d4-3002-4f27-859c-8b678fe5a63f
 f2(x) = sin(x)^2 + cos(x)^2
 
@@ -293,11 +305,15 @@ end
 # ╠═5df2c070-8561-4114-941d-1df3c1be9a08
 # ╠═d51983dd-946b-4e37-8f47-4c73da011483
 # ╠═abcef206-a381-45e2-8e7e-4d01be910e1e
+# ╠═5e85f6ad-0e09-46da-9294-db5d326f8525
+# ╠═981944ea-92a2-479f-b631-4d894492d235
+# ╠═19234100-d9a4-4841-b328-60e275c50e6d
 # ╠═8a675a42-0a40-43ef-a429-66d1749dd7d2
 # ╠═0fb2f0e6-5087-43cf-9dbd-5e0e89127c05
 # ╠═52ef829a-83a3-4d0f-a0ec-c6501acca454
 # ╠═7e8f24e8-7843-4e70-8dce-f0407222ffed
 # ╠═c36d15e1-5010-4135-a707-5196c55e1506
+# ╠═c4cd02b5-9488-423d-92fc-b6ded33cb7eb
 # ╟─2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d
 # ╠═370bbeb1-bb71-4104-985a-ced1dbbdf905
 # ╠═184649d4-3002-4f27-859c-8b678fe5a63f
