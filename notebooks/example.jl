@@ -94,29 +94,29 @@ begin
 end
 
 # ╔═╡ 5e85f6ad-0e09-46da-9294-db5d326f8525
-@bind formula MathInput(f1(x))
+@bind formula1 MathInput(f1(x))
 
 # ╔═╡ 981944ea-92a2-479f-b631-4d894492d235
-typeof(formula)
+typeof(formula1)
 
 # ╔═╡ 19234100-d9a4-4841-b328-60e275c50e6d
-formula
+formula1
 
 # ╔═╡ c4cd02b5-9488-423d-92fc-b6ded33cb7eb
-parse(MathJSONFormat, formula)
+parse(MathJSONFormat, formula1)
 
 # ╔═╡ 184649d4-3002-4f27-859c-8b678fe5a63f
 f2(x) = sin(x)^2 + cos(x)^2
 
 # ╔═╡ 3a4b5c6d-7e8f-9a0b-1c2d-3e4f5a6b7c8d
-@bind formula_basic MathInput(f2(x))
+@bind formula2 MathInput(f2(x))
 
 # ╔═╡ 4a5b6c7d-8e9f-0a1b-2c3d-4e5f6a7b8c9d
-formula_basic  # MathJSON string
+formula2  # MathJSON string
 
 # ╔═╡ 74a84a84-424c-42e3-a5de-0e3b6b801a20
 # simplify(to_giac(parse(MathJSONFormat, formula_basic)))
-formula_basic |> x -> parse(MathJSONFormat, x) |> to_giac |> simplify
+formula2 |> x -> parse(MathJSONFormat, x) |> to_giac |> simplify
 
 # ╔═╡ b2d74da0-853b-4bae-bc95-5e8568f45233
 md"""
@@ -127,6 +127,12 @@ The widget can be pre-filled with a MathJSON expression
 
 # ╔═╡ e084fd23-4e52-48b0-8006-2c6141621cb8
 f3(x) = x^2 + 3*x - 3
+
+# ╔═╡ 0c3f835c-5571-4716-9714-c99342695455
+f3(x)
+
+# ╔═╡ 181f7d18-fd76-41df-8c61-f3fe659b8526
+@bind formula3 MathInput(f3(x))
 
 # ╔═╡ 29533fe6-1873-4ebd-99f6-cd88105d6762
 mathjson_expr3 = FunctionExpr(:D, [to_mathjson(f3(x)), SymbolExpr("x")])
@@ -155,6 +161,9 @@ The widget can be pre-filled with a MathJSON expression
 
 # ╔═╡ e0193038-7425-4b46-b12f-5edce6be0f50
 f4(x) = x^2 - 3*x - 1
+
+# ╔═╡ bf5b82ad-bcb0-48d7-9b29-b5eb2f50d377
+f4(x)
 
 # ╔═╡ f0b2dd65-f12a-4693-b862-2793fac94e81
 mathjson_expr4 = FunctionExpr(:Integrate, [to_mathjson(f4(x)), SymbolExpr("x")])
@@ -322,6 +331,8 @@ end
 # ╠═74a84a84-424c-42e3-a5de-0e3b6b801a20
 # ╟─b2d74da0-853b-4bae-bc95-5e8568f45233
 # ╠═e084fd23-4e52-48b0-8006-2c6141621cb8
+# ╠═0c3f835c-5571-4716-9714-c99342695455
+# ╠═181f7d18-fd76-41df-8c61-f3fe659b8526
 # ╠═29533fe6-1873-4ebd-99f6-cd88105d6762
 # ╠═42625fdb-c3b9-4a34-85f1-34a86d39137e
 # ╠═70cf1f91-f021-4e18-9a71-b505c6fd4b7e
@@ -329,6 +340,7 @@ end
 # ╠═e5278697-e78a-4ec6-8c2b-0a5f020f9475
 # ╟─ba29fe53-c93f-46c2-aa7a-4776ab4941aa
 # ╠═e0193038-7425-4b46-b12f-5edce6be0f50
+# ╠═bf5b82ad-bcb0-48d7-9b29-b5eb2f50d377
 # ╠═f0b2dd65-f12a-4693-b862-2793fac94e81
 # ╠═1678428b-c8c2-46bf-b34d-5d5ccf128744
 # ╠═c21d2db1-3e7e-46b4-8a75-af603c47c03d
